@@ -19,26 +19,31 @@ app.post('/users/create', async (req, res) => {
     let changTimezone = Date.now()+25200000 //ใช้คำสั่ง Date.now ดึงเวลาปัจจุบันมาเป็น มิลลิวินาที แล้วนำมาบวกเพิ่ม 7 ชม
     let thaiTimezone = new Date(changTimezone) //สร้างตัวแปลรับ Date ของโซนประเทศไทย
     const client = new MongoClient(uri)
-    await client.connect();
-    
-    await client.db("mydb").collection("users").insertOne({
+
+    try{
+        await client.connect();
+        await client.db("mydb").collection("users").insertOne({
         id: parseInt(user.id),
         fname: user.fname,
         lname: user.lname,
         timeupdate: thaiTimezone
-    });
+        });
 
-    //console.log เพื่อตรวจสอบ date ว่าถูกต้องหรือไม่
-    console.log(thaiTimezone) //ICT TIMEZONE
-    console.log(new Date()) //UTC TIMEZONE
+        //console.log เพื่อตรวจสอบ date ว่าถูกต้องหรือไม่
+        console.log(thaiTimezone) //ICT TIMEZONE
+        console.log(new Date()) //UTC TIMEZONE
 
-    await client.close();
+        await client.close();
 
-    res.status(200).send({
-        "status": "ok",
-        "message": "User with ID" + user.id + " is created!",
-        "user": user
-    })
+        res.status(200).send({
+            "status": "ok",
+            "message": "User with ID" + user.id + " is created!",
+            "user": user
+        })
+    }catch(err){
+        console.log("Error is " + err)
+        res.status(500).send()
+    }
 })
 
 /*-------------------------------------------------------------------------------*/
@@ -46,13 +51,18 @@ app.post('/users/create', async (req, res) => {
 //Read
 app.get('/users/read', async (req, res) => {
     const client = new MongoClient(uri)
-    await client.connect();
+
+    try{
+        await client.connect();
     
-    const users = await client.db("mydb").collection("users").find({}).toArray();
+        const users = await client.db("mydb").collection("users").find({}).toArray();
+        await client.close();
 
-    await client.close();
-
-    res.status(200).send(users)
+        res.status(200).send(users)
+    }catch(err){
+        console.log("Error is " + err)
+        res.status(500).send()
+    }
 })
 
 /*-------------------------------------------------------------------------------*/
@@ -61,13 +71,19 @@ app.get('/users/read', async (req, res) => {
 app.get('/users/read/:id', async (req, res) => {
     const id = parseInt(req.params.id)
     const client = new MongoClient(uri)
-    await client.connect();
+
+    try{
+        await client.connect();
     
-    const user = await client.db("mydb").collection("users").findOne({id});
+        const user = await client.db("mydb").collection("users").findOne({id});
 
-    await client.close();
+        await client.close();
 
-    res.status(200).send(user)
+        res.status(200).send(user)
+    }catch(err){
+        console.log("Error is " + err)
+        res.status(500).send()
+    }
 })
 
 /*-------------------------------------------------------------------------------*/
@@ -79,25 +95,31 @@ app.put('/users/update/:id', async (req, res) => {
     let changTimezone = Date.now()+25200000 //ใช้คำสั่ง Date.now ดึงเวลาปัจจุบันมาเป็น มิลลิวินาที แล้วนำมาบวกเพิ่ม 7 ชม
     let thaiTimezone = new Date(changTimezone) //สร้างตัวแปลรับ Date ของโซนประเทศไทย
     const client = new MongoClient(uri)
-    await client.connect();
     
-    await client.db("mydb").collection("users").updateOne({id}, {"$set": {
+    try{
+        await client.connect();
+    
+        await client.db("mydb").collection("users").updateOne({id}, {"$set": {
         fname: user.fname,
         lname: user.lname,
         timeupdate: thaiTimezone
-}});
+        }})
 
-    //console.log เพื่อตรวจสอบ date ว่าถูกต้องหรือไม่
-    console.log(thaiTimezone) //ICT TIMEZONE
-    console.log(new Date()) //UTC TIMEZONE
+        //console.log เพื่อตรวจสอบ date ว่าถูกต้องหรือไม่
+        console.log(thaiTimezone) //ICT TIMEZONE
+        console.log(new Date()) //UTC TIMEZONE
 
-    await client.close();
+        await client.close();
 
-    res.status(200).send({
-        "status": "ok",
-        "message": "User with ID: " + id + " is updated!",
-        "user": user
-    })
+        res.status(200).send({
+            "status": "ok",
+            "message": "User with ID: " + id + " is updated!",
+            "user": user
+        })
+    }catch(err){
+        console.log("Error is " + err)
+        res.status(500).send()
+    }
 })
 
 /*-------------------------------------------------------------------------------*/
@@ -106,14 +128,17 @@ app.put('/users/update/:id', async (req, res) => {
 app.delete('/users/delete/:id', async (req, res) => {
     const id = parseInt(req.params.id)
     const client = new MongoClient(uri)
-    await client.connect();
-    
-    const user = await client.db("mydb").collection("users").deleteOne({id});
+    try{
+        await client.connect();
+        await client.db("mydb").collection("users").deleteOne({id});
+        await client.close();
 
-    await client.close();
-
-    res.status(200).send({
-        "status": "ok",
-        "message": "User with ID: " + id + " is deleted!"
-    })
+        res.status(200).send({
+            "status": "ok",
+            "message": "User with ID: " + id + " is deleted!"
+        })
+    }catch(err){
+        console.log("Error is " + err)
+        res.status(500).send()
+    }
 })
